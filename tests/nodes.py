@@ -6,18 +6,9 @@ thisDirPath = os.path.dirname( os.path.abspath( __file__ ) )
 uberPath = os.path.join( thisDirPath, '..', '..', 'uberNode' )
 if uberPath not in sys.path:
     sys.path.append( uberPath )
+import utils
 from uberNode import UberNode
 from rectangle import Rectangle
-
-
-def multiplyColour( c, d ):
-    return [
-        c[0] * d,
-        c[1] * d,
-        c[2] * d,
-        1
-    ]
-
 
 
 class ColumnGenerator( UberNode ):
@@ -49,6 +40,11 @@ class Stack( UberNode ):
             # Randomise a number of steps.
             upper = random.randint( 2, 10 )
             for i in range( 1, upper ):
-                rects.append( Rectangle( rect.x, rect.y + i * 100.0 / upper, rect.width, 100.0 / upper, fill=multiplyColour( rect.fill, i / 2.0 ) ) )
+                rects.append( Rectangle( 
+                    rect.x, 
+                    rect.y + i * 100.0 / upper, rect.width, 
+                    100.0 / upper, 
+                    fill=utils.multiplyColour( rect.fill, i / 2.0 ) 
+                ) )
 
         self.outputs['rects'] = rects

@@ -1,19 +1,15 @@
-import nodebox.graphics as nbg
-
 import nodes
+from application import Application
 
 
 if __name__ == '__main__':
 
-    colGen = nodes.ColumnGenerator()
-    stack = nodes.Stack()
-    colGen.outputs.connect( 'rects', stack.inputs, 'rects' )
+    class ColumnApplication( Application ):
 
-    def draw( canvas ):
-        canvas.clear()
-        nbg.rect( 0, 0, 500, 500 )
-        for rect in stack.outputs['rects']:
-            rect.draw()
+        def generateRectangles( self ):
+            colGen = nodes.ColumnGenerator()
+            stack = nodes.Stack()
+            colGen.outputs.connect( 'rects', stack.inputs, 'rects' )
+            return stack.outputs['rects']
 
-    nbg.canvas.size = 500, 500
-    nbg.canvas.run( draw )
+    ColumnApplication()
