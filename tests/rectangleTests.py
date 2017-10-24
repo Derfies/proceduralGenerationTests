@@ -5,7 +5,7 @@ import random
 import nodebox.graphics as nbg
 
 thisDirPath = os.path.dirname( os.path.abspath( __file__ ) )
-uberPath = os.path.join( thisDirPath, '..' )
+uberPath = os.path.join( thisDirPath, '..', '..', 'uberNode' )
 if uberPath not in sys.path:
     sys.path.append( uberPath )
 from uberNode import UberNode
@@ -33,27 +33,10 @@ class Rectangle( object ):
         rect = nbg.rect( self.x, self.y, self.width, self.height, fill=self.fill )
 
 
-class Split( UberNode ):
-
-    def __init__( self, *args, **kwargs ):
-        UberNode.__init__( self, *args, **kwargs )
-
-        self.addInput( 'in' )
-        self.addOutput( 'out' )
-
-    def evaluate( self, **inputs ):
-        inRect = inputs['in']
-        return {
-            'out': Rectangle( 0, 0, inRect.width / 2, inRect.height ),
-        }
-
-
 class ColumnGenerator( UberNode ):
 
-    def __init__( self, *args, **kwargs ):
-        UberNode.__init__( self, *args, **kwargs )
-
-        self.addOutput( 'outRects' )
+    def __init__( self  ):
+        UberNode.__init__( self, outputs={'rects': []} )
 
     def evaluate( self ):
 
@@ -64,45 +47,36 @@ class ColumnGenerator( UberNode ):
             for c in range( 3 ):
                 colour[c] = random.uniform( 0.0, 0.2 )
             rects.append( Rectangle( i * 50, 0, 40, 100, fill=colour ) )
-        return {
-            'outRects': rects,
-        }
+        self.outputs['rects'] = rects
 
 
 class Stack( UberNode ):
 
-    def __init__( self, *args, **kwargs ):
-        UberNode.__init__( self, *args, **kwargs )
-
-        self.addInput( 'inRects' )
-        self.addOutput( 'outRects' )
+    def __init__( self ):
+        UberNode.__init__( self, inputs={'rects': []}, outputs={'rects': []} )
 
     def evaluate( self, **inputs ):
         rects = []
-        for rect in inputs['inRects']:
+        for rect in self.inputs['rects']:
             
             # Randomise a number of steps.
             upper = random.randint( 2, 10 )
             for i in range( 1, upper ):
                 rects.append( Rectangle( rect.x, rect.y + i * 100.0 / upper, rect.width, 100.0 / upper, fill=multiplyColour( rect.fill, i / 2.0 ) ) )
 
-        return {
-            'outRects': rects
-        }
+        self.outputs['rects'] = rects
 
 
 if __name__ == '__main__':
 
     colGen = ColumnGenerator()
-    colGen.doEvaluation()       # BUG - Shouldn't need to call this. Should happen automatically!
     stack = Stack()
-    colGen.connect( 'outRects', stack, 'inRects' )
-    rects = stack.getOutputValue( 'outRects' )
+    colGen.outputs.connect( 'rects', stack.inputs, 'rects' )
 
     def draw( canvas ):
         canvas.clear()
         nbg.rect( 0, 0, 500, 500 )
-        for rect in rects:
+        for rect in stack.outputs['rects']:
             rect.draw()
 
     nbg.canvas.size = 500, 500
