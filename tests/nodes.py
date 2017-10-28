@@ -33,7 +33,7 @@ class Stack( UberNode ):
     def __init__( self ):
         UberNode.__init__( self, inputs={'rects': []}, outputs={'rects': []} )
 
-    def evaluate( self, **inputs ):
+    def evaluate( self ):
         rects = []
         for rect in self.inputs['rects']:
             
@@ -48,3 +48,51 @@ class Stack( UberNode ):
                 ) )
 
         self.outputs['rects'] = rects
+
+
+class Quad( UberNode ):
+
+    def __init__( self ):
+        UberNode.__init__( self, inputs={'rects': []}, outputs={'rects': []} )
+
+    def evaluate( self ):
+        outRects = []
+        
+        def splitRect( rect ):
+
+            r = random.uniform( 0.0, 1.0 )
+            g = random.uniform( 0.0, 1.0 )
+            b = random.uniform( 0.0, 1.0 )
+
+            xs = [
+                rect.x, 
+                rect.x + rect.width / 2.0,
+                rect.x,
+                rect.x + rect.width / 2.0,
+            ]
+            ys = [
+                rect.y, 
+                rect.y,
+                rect.y + rect.height / 2.0,
+                rect.y + rect.height / 2.0,
+            ]
+
+            return [Rectangle( 
+                    xs[i] + 20, 
+                    ys[i] + 20, 
+                    rect.width / 2.0 - 40, 
+                    rect.height / 2.0 - 40, 
+                    fill=(r, g, b, 1) 
+                ) for i in range( len( xs ) )]
+
+        def recRect( rects, count=0 ):
+            if count > 2: 
+                return
+            for rect in rects:
+                outRects.append( rect )
+                newRects = splitRect( rect )
+                outRects.extend( newRects )
+                recRect( newRects, count + 1 )
+        
+        recRect( self.inputs['rects'] )
+        self.outputs['rects'] = outRects
